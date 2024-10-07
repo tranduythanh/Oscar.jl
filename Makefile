@@ -1,2 +1,2 @@
 push:
-	./push.sh
+	./gitpush.sh
