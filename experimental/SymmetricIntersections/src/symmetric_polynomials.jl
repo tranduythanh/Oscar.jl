@@ -279,7 +279,6 @@ function g_murnaghan_nakayama_rule(k::Int, lambda::Vector{Int})
     return dual_Grothendieck_expansion(f)
 end
 
-# Multiplication functions
 # Helper function to trim trailing zeros
 function trim_zeros(arr::Vector{Int})
   i = findlast(x -> x != 0, arr)
@@ -291,21 +290,21 @@ function mult(lambda::Vector{Int}, mu::Vector{Int}, n::Int=length(lambda)+length
   R, _ = polynomial_ring(ZZ, n, cached = false)
   f = Schur_polynomial(R,lambda,n)*Schur_polynomial(R,mu,n)
   expansion = Schur_expansion(f)
-  return expansion  # Schur_expansion now returns trimmed results
+  return expansion
 end
 
 # Modified G_mult function
 function G_mult(lambda::Vector{Int}, mu::Vector{Int}, n::Int=length(lambda)+length(mu))
   R, _ = polynomial_ring(ZZ, n, cached = false)
   f = Grothendieck_polynomial(R,lambda,n)*Grothendieck_polynomial(R,mu,n)
-  return Grothendieck_expansion(f)  # Grothendieck_expansion now returns trimmed results
+  return Grothendieck_expansion(f)
 end
 
 # Modified g_mult function
 function g_mult(lambda::Vector{Int}, mu::Vector{Int}, n::Int=length(lambda)+length(mu))
   R, _ = polynomial_ring(ZZ, n, cached = false)
   f = dual_Grothendieck_polynomial(R,lambda,n)*dual_Grothendieck_polynomial(R,mu,n)
-  return dual_Grothendieck_expansion(f)  # dual_Grothendieck_expansion now returns trimmed results
+  return dual_Grothendieck_expansion(f)
 end
 
 # Elementary symmetric polynomial
