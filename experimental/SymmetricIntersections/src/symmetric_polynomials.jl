@@ -1,54 +1,19 @@
 using Oscar
 
 # Schur polynomial functions
-function Schur_polynomial(lambda::Vector{Int}, n::Int = length(lambda))
-    @req n >= 0 "n >= 0 required"
-    while length(lambda) < n
-        push!(lambda, 0)  # Append zeros to the partition if needed
-    end
+function schur(lambda::Vector{Int}, n::Int = length(lambda))
     R, _ = polynomial_ring(ZZ, n, cached = false)
-    return Schur_polynomial(R, lambda, n)
+    return schur(R, lambda, n)
 end
 
-function Schur_polynomial(R::ZZMPolyRing, lambda::Vector{Int}, n::Int = length(lambda))
-    @req n >= 0 "n >= 0 required"
-    if n == 0 || n < length(lambda)
-        if isempty(lambda)
-            return one(R)
-        else
-            return zero(R)
-        end
-    end
-    @req n <= nvars(R) "n <= nvars(R) required"
-    return Schur_polynomial_bf(R, lambda, n) #bialternant formula
-end
-
-function Schur_polynomial_bf(R::ZZMPolyRing, lambda::Vector{Int}, n::Int = length(lambda))
-    @req n >= 0 "n >= 0 required"
-    while length(lambda) < n
-        push!(lambda, 0)  # Append zeros to the partition if needed
-    end
-    x = gens(R)[1:n]
-    A = zero_matrix(R,n,n)
-    for i = 1:n
-        for j = 1:n
-            A[i,j] = x[i]^(lambda[j]+n-j)
-        end
-    end
-    sp = det(A)
-    # divide by the product
-    for i = 1:n - 1
-        for j = i + 1:n
-            sp = divexact(sp, x[i] - x[j])
-        end
-    end
-    return sp
+function schur(R::ZZMPolyRing, lambda::Vector{Int}, n::Int = length(lambda))
+    return schur_polynomial(R, partition(lambda), n)
 end
 
 # Power sum, elementary symmetric, and complete homogeneous symmetric functions
 function p(k::Int, n::Int)
     @req n >= 0 "n >= 0 required"
-    R, _ = PolynomialRing(ZZ, n, cached = false)
+    R, _ = polynomial_ring(ZZ, n, cached = false)
     return p(R, k, n)
 end
 
@@ -57,40 +22,33 @@ function p(R::ZZMPolyRing, k::Int, n::Int)
     return sum(x[i]^k for i in 1:n)
 end
 
-function e(k::Int,n::Int)
+function e(k::Int, n::Int)
     @req n >= 0 "n >= 0 required"
-    R, _ = PolynomialRing(ZZ, n, cached = false)
-    return e(R,k,n)
+    R, _ = polynomial_ring(ZZ, n, cached = false)
+    return e(R, k, n)
 end
 
 function e(R::ZZMPolyRing, k::Int, n::Int)
-    p = partitions(k)[length(partitions(k))]
-    return Schur_polynomial(R, p, n)
+    return schur_polynomial(R, partitions(k)[length(partitions(k))], n)
 end
 
 function h(k::Int, n::Int)
     @req n >= 0 "n >= 0 required"
-    R, _ = PolynomialRing(ZZ, n, cached = false)
+    R, _ = polynomial_ring(ZZ, n, cached = false)
     return h(R, k, n)
 end
 
 function h(R::ZZMPolyRing, k::Int, n::Int)
-    p = partition(k)
-    return Schur_polynomial(R, p, n)
+    return schur_polynomial(R, partition(k), n)
 end
 
 # Grothendieck polynomial functions
-function Grothendieck_polynomial(lambda::Vector{Int}, n::Int = length(lambda))
-    @req n >= 0 "n >= 0 required"
-    while length(lambda) < n
-        push!(lambda, 0)  # Append zeros to the partition if needed
-    end
+function grothendieck(lambda::Vector{Int}, n::Int = length(lambda))
     R, _ = polynomial_ring(ZZ, n, cached = false)
-    return Grothendieck_polynomial(R, lambda, n)
+    return grothendieck(R, lambda, n)
 end
 
-function Grothendieck_polynomial(R::ZZMPolyRing, lambda::Vector{Int}, n::Int = length(lambda))
-    @req n >= 0 "n >= 0 required"
+function grothendieck(R::ZZMPolyRing, lambda::Vector{Int}, n::Int = length(lambda))
     if n == 0 || n < length(lambda)
         if isempty(lambda)
             return one(R)
@@ -99,24 +57,22 @@ function Grothendieck_polynomial(R::ZZMPolyRing, lambda::Vector{Int}, n::Int = l
         end
     end
     @req n <= nvars(R) "n <= nvars(R) required"
-    return Grothendieck_polynomial_bf(R, lambda, n) #bialternant formula
+    return grothendieck_polynomial_bf(R, lambda, n)
 end
 
-function Grothendieck_polynomial_bf(R::ZZMPolyRing, lambda::Vector{Int}, n::Int = length(lambda))
-    @req n > 0 "number of variables must be > 0"
+function grothendieck_polynomial_bf(R::ZZMPolyRing, lambda::Vector{Int}, n::Int = length(lambda))
     @req n >= length(lambda) "number of variables must be at least the length of the partition"
     while length(lambda) < n
-        push!(lambda, 0)  # Append zeros to the partition if needed
+        push!(lambda, 0)
     end
     x = gens(R)[1:n]
-    A = zero_matrix(R,n,n)
+    A = zero_matrix(R, n, n)
     for i = 1:n
         for j = 1:n
             A[i,j] = x[i]^(lambda[j]+n-j)*(1-x[i])^(j-1)
         end
     end
     sp = det(A)
-    # divide by the product
     for i = 1:n - 1
         for j = i + 1:n
             sp = divexact(sp, x[i] - x[j])
@@ -126,17 +82,12 @@ function Grothendieck_polynomial_bf(R::ZZMPolyRing, lambda::Vector{Int}, n::Int 
 end
 
 # Dual Grothendieck polynomial functions
-function dual_Grothendieck_polynomial(lambda::Vector{Int}, n::Int = length(lambda))
-    @req n >= 0 "n >= 0 required"
-    while length(lambda) < n
-        push!(lambda, 0)  # Append zeros to the partition if needed
-    end
+function dual_grothendieck(lambda::Vector{Int}, n::Int = length(lambda))
     R, _ = polynomial_ring(ZZ, n, cached = false)
-    return dual_Grothendieck_polynomial(R, lambda, n)
+    return dual_grothendieck(R, lambda, n)
 end
 
-function dual_Grothendieck_polynomial(R::ZZMPolyRing, lambda::Vector{Int}, n::Int = length(lambda))
-    @req n >= 0 "n >= 0 required"
+function dual_grothendieck(R::ZZMPolyRing, lambda::Vector{Int}, n::Int = length(lambda))
     if n == 0 || n < length(lambda)
         if isempty(lambda)
             return one(R)
@@ -145,14 +96,13 @@ function dual_Grothendieck_polynomial(R::ZZMPolyRing, lambda::Vector{Int}, n::In
         end
     end
     @req n <= nvars(R) "n <= nvars(R) required"
-    return dual_Grothendieck_polynomial_bf(R, lambda, n) #bialternant formula
+    return dual_grothendieck_polynomial_bf(R, lambda, n)
 end
 
-function dual_Grothendieck_polynomial_bf(R::ZZMPolyRing, lambda::Vector{Int}, n::Int = length(lambda))
-    @req n > 0 "number of variables must be > 0"
+function dual_grothendieck_polynomial_bf(R::ZZMPolyRing, lambda::Vector{Int}, n::Int = length(lambda))
     @req n >= length(lambda) "number of variables must be at least the length of the partition"
     while length(lambda) < n
-        push!(lambda, 0)  # Append zeros to the partition if needed
+        push!(lambda, 0)
     end
     x = gens(R)[1:n]
     A = zero_matrix(R,n,n)
@@ -163,7 +113,6 @@ function dual_Grothendieck_polynomial_bf(R::ZZMPolyRing, lambda::Vector{Int}, n:
         end
     end
     sp = det(A)
-    # divide by the product
     for i = 1:n - 1
         for j = i + 1:n
             sp = divexact(sp, x[i] - x[j])
@@ -172,143 +121,113 @@ function dual_Grothendieck_polynomial_bf(R::ZZMPolyRing, lambda::Vector{Int}, n:
     return sp
 end
 
-# Modified Schur_expansion function
-function Schur_expansion(f)
-  R = parent(f)
-  n = length(vars(f))  # Number of variables
-  result = []  # List to store the results
-  while f != zero(f)
-      l = collect(exponents(f))
-      c = collect(coefficients(f))
-      push!(result, (c[1], trim_zeros(l[1])))
-      f -= c[1]*Schur_polynomial(R, l[1], n)
-  end
-  return result
+# Expansion functions
+function schur_expansion(f)
+    R = parent(f)
+    n = length(vars(f))
+    result = []
+    while f != zero(f)
+        l = filter!(x -> x != 0, collect(exponents(f))[end])
+        c = collect(coefficients(f))[end]
+        push!(result, (c, reverse(l)))
+        f -= c * schur(R, reverse(l), n)
+    end
+    return result
 end
 
-# Modified Grothendieck_expansion function
-function Grothendieck_expansion(f)
-  R = parent(f)
-  n = length(vars(f))
-  result = []
-  while f != zero(f)
-      l = collect(exponents(f))
-      c = collect(coefficients(f))
-      t = reverse(l[end])
-      push!(result, (c[end], trim_zeros(t)))
-      f -= c[end]*Grothendieck_polynomial(R, t, n)
-  end
-  return result
+function grothendieck_expansion(f)
+    R = parent(f)
+    n = length(vars(f))
+    result = []
+    while f != zero(f)
+        l = filter!(x -> x != 0, collect(exponents(f))[end])
+        c = collect(coefficients(f))[end]
+        push!(result, (c, reverse(l)))
+        f -= c * grothendieck(R, reverse(l), n)
+    end
+    return result
 end
 
-# Modified dual_Grothendieck_expansion function
-function dual_Grothendieck_expansion(f)
-  R = parent(f)
-  n = length(vars(f))
-  result = []
-  while f != zero(f)
-      l = collect(exponents(f))
-      c = collect(coefficients(f))
-      push!(result, (c[1], trim_zeros(l[1])))
-      f -= c[1]*dual_Grothendieck_polynomial(R, l[1], n)
-  end
-  return result
+function dual_grothendieck_expansion(f)
+    R = parent(f)
+    n = length(vars(f))
+    result = []
+    while f != zero(f)
+        l = filter!(x -> x != 0, reverse(collect(exponents(f))[1]))
+        c = collect(coefficients(f))[1]
+        push!(result, (c, reverse(l)))
+        f -= c * dual_grothendieck(R, reverse(l), n)
+    end
+    return result
 end
 
 # Rule functions
 function pieri_rule(k::Int, lambda::Vector{Int})
     n = 1 + length(lambda)
     R, _ = polynomial_ring(ZZ, n, cached = false)
-    f = h(R,k,n)*Schur_polynomial(R,lambda,n)
-    return Schur_expansion(f)
+    return schur_expansion(h(R, k, n) * schur(R, lambda, n))
 end
 
 function dual_pieri_rule(k::Int, lambda::Vector{Int})
     n = k + length(lambda)
     R, _ = polynomial_ring(ZZ, n, cached = false)
-    f = e(R,k,n)*Schur_polynomial(R,lambda,n)
-    return Schur_expansion(f)
+    return schur_expansion(e(R, k, n) * schur(R, lambda, n))
 end
 
 function murnaghan_nakayama_rule(k::Int, lambda::Vector{Int})
     n = k + length(lambda)
     R, _ = polynomial_ring(ZZ, n, cached = false)
-    f = p(R,k,n)*Schur_polynomial(R,lambda,n)
-    return Schur_expansion(f)
+    return schur_expansion(p(R, k, n) * schur(R, lambda, n))
 end
 
 function G_pieri_rule(k::Int, lambda::Vector{Int})
-    n = k + length(lambda)
+    n = 1 + length(lambda)
     R, _ = polynomial_ring(ZZ, n, cached = false)
-    f = h(R,k,n)*Grothendieck_polynomial(R,lambda,n)
-    return Grothendieck_expansion(f)
+    return grothendieck_expansion(h(R, k, n) * grothendieck(R, lambda, n))
 end
 
 function dual_G_pieri_rule(k::Int, lambda::Vector{Int})
     n = k + length(lambda)
     R, _ = polynomial_ring(ZZ, n, cached = false)
-    f = e(R,k,n)*Grothendieck_polynomial(R,lambda,n)
-    return Grothendieck_expansion(f)
+    return grothendieck_expansion(e(R, k, n) * grothendieck(R, lambda, n))
 end
 
 function G_murnaghan_nakayama_rule(k::Int, lambda::Vector{Int})
     n = k + length(lambda)
     R, _ = polynomial_ring(ZZ, n, cached = false)
-    f = p(R,k,n)*Grothendieck_polynomial(R,lambda,n)
-    return Grothendieck_expansion(f)
+    return grothendieck_expansion(p(R, k, n) * grothendieck(R, lambda, n))
 end
 
 function g_pieri_rule(k::Int, lambda::Vector{Int})
     n = 1 + length(lambda)
     R, _ = polynomial_ring(ZZ, n, cached = false)
-    f = h(R,k,n)*dual_Grothendieck_polynomial(R,lambda,n)
-    return dual_Grothendieck_expansion(f)
+    return dual_grothendieck_expansion(h(R, k, n) * dual_grothendieck(R, lambda, n))
 end
 
 function dual_g_pieri_rule(k::Int, lambda::Vector{Int})
     n = k + length(lambda)
     R, _ = polynomial_ring(ZZ, n, cached = false)
-    f = e(R,k,n)*dual_Grothendieck_polynomial(R,lambda,n)
-    return dual_Grothendieck_expansion(f)
+    return dual_grothendieck_expansion(e(R, k, n) * dual_grothendieck(R, lambda, n))
 end
 
 function g_murnaghan_nakayama_rule(k::Int, lambda::Vector{Int})
     n = k + length(lambda)
     R, _ = polynomial_ring(ZZ, n, cached = false)
-    f = p(R,k,n)*dual_Grothendieck_polynomial(R,lambda,n)
-    return dual_Grothendieck_expansion(f)
+    return dual_grothendieck_expansion(p(R, k, n) * dual_grothendieck(R, lambda, n))
 end
 
-# Helper function to trim trailing zeros
-function trim_zeros(arr::Vector{Int})
-  i = findlast(x -> x != 0, arr)
-  return isnothing(i) ? Int[] : arr[1:i]
+# Littlewood-Richardson rule functions
+function littlewood_richardson_rule(lambda::Vector{Int}, mu::Vector{Int}, n::Int=length(lambda)+length(mu))
+    R, _ = polynomial_ring(ZZ, n, cached = false)
+    return schur_expansion(schur(R, lambda, n) * schur(R, mu, n))
 end
 
-# Modified mult function (already trimmed, but included for completeness)
-function mult(lambda::Vector{Int}, mu::Vector{Int}, n::Int=length(lambda)+length(mu))
-  R, _ = polynomial_ring(ZZ, n, cached = false)
-  f = Schur_polynomial(R,lambda,n)*Schur_polynomial(R,mu,n)
-  expansion = Schur_expansion(f)
-  return expansion
+function G_littlewood_richardson_rule(lambda::Vector{Int}, mu::Vector{Int}, n::Int=length(lambda)+length(mu))
+    R, _ = polynomial_ring(ZZ, n, cached = false)
+    return grothendieck_expansion(grothendieck(R, lambda, n) * grothendieck(R, mu, n))
 end
 
-# Modified G_mult function
-function G_mult(lambda::Vector{Int}, mu::Vector{Int}, n::Int=length(lambda)+length(mu))
-  R, _ = polynomial_ring(ZZ, n, cached = false)
-  f = Grothendieck_polynomial(R,lambda,n)*Grothendieck_polynomial(R,mu,n)
-  return Grothendieck_expansion(f)
-end
-
-# Modified g_mult function
-function g_mult(lambda::Vector{Int}, mu::Vector{Int}, n::Int=length(lambda)+length(mu))
-  R, _ = polynomial_ring(ZZ, n, cached = false)
-  f = dual_Grothendieck_polynomial(R,lambda,n)*dual_Grothendieck_polynomial(R,mu,n)
-  return dual_Grothendieck_expansion(f)
-end
-
-# Elementary symmetric polynomial
-function es(m, j)
-    R, x = PolynomialRing(ZZ, m, :x)
-    return elementary_symmetric_polynomial(R, x, j)
+function g_littlewood_richardson_rule(lambda::Vector{Int}, mu::Vector{Int}, n::Int=length(lambda)+length(mu))
+    R, _ = polynomial_ring(ZZ, n, cached = false)
+    return dual_grothendieck_expansion(dual_grothendieck(R, lambda, n) * dual_grothendieck(R, mu, n))
 end
