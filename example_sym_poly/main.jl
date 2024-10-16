@@ -56,3 +56,6 @@ println(G_littlewood_richardson_rule([2,1],[2,1]))
 println(littlewood_richardson_rule([2,1],[2,1]))
 println(murnaghan_nakayama_rule(3,[2,1]))
 println(G_murnaghan_nakayama_rule(3,[2,1]))
+
+println(qmult(Partition([2,1]), Partition([2,1]), 3, (3,3)))
+println(qmult_schur(Partition([2,1]), Partition([2,1]), 3, (3,3)))
