@@ -10,3 +10,4 @@ Manifest.toml
 *~
 *.swp
 /experimental/NoExperimental_whitelist.jl
+Oscar.so
