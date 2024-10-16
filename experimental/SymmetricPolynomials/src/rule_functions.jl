@@ -100,7 +100,6 @@ function qmult(
 )
   # First, compute the regular Littlewood-Richardson expansion using mult
   expansion = mult(lambda, mu)
-  println(expansion)
 
   function __rm_rim_hook(part::Vector{Int})
       p = Partition(part)
